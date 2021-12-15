@@ -1,3 +1,6 @@
+# TODO change initialization as mqtt_mia.py
+# TODO change quality name (il nome delle pm dà errore il . con mongo)
+
 from aiohttp import web
 import atomic_store
 import time
@@ -12,6 +15,9 @@ import smbus
 import random
 import json
 import threading
+import uuid
+
+namespace = "my.sensors:"
 
 # ***********************************************************
 # *                  isr routine anemometer                 *
@@ -264,6 +270,10 @@ sgp30.set_iaq_baseline(0x8973, 0x8aae)
 
 pm_sensor = pms5003("/dev/ttyS0")
 
+# **************************************************************************************
+# *                         GET functions for the clients                              *
+# **************************************************************************************
+
 
 async def getTemp(request):
     with atomic_store.open('digital_twin.json', default=dict()) as store:
@@ -320,75 +330,79 @@ async def getWind(request):
         props = dt["features"]["measurements"]["properties"]
         return web.json_response({"wind": props["wind"]["data"]})
 
+# **************************************************************************************
+# *   Functions to read the initial config from file and initialize the digital twin   *
+# **************************************************************************************
 
-def init():
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        store.value = {"thingId": "my.sensors:sensor00",
-                       "policyId": "my.test:policy",
-                       "attributes": {
-                           "location": {
+
+def read_config():
+    with open("config/config.json") as config_file:
+        config_json = json.load(config_file)
+        if "gps" not in config_json:
+            print("Error! GPS required!")
+        return config_json
+
+
+def init(store):
+    config_json = read_config()
+    gps = config_json["gps"]
+    serial_number = config_json["serial number"]
+    school = config_json["school"]
+
+    id = namespace + "sensor" + str(uuid.uuid4())
+    store.value = {"thingId": id,
+                   "policyId": "my.test:policy",
+                   "attributes": {
+                       "location": {
                                "position": {
-                                   "latitude": 45.516,
-                                   "longitude": -122.636
+                                   "latitude": gps["lat"],
+                                   "longitude": gps["lon"]
                                }
-                           },
-                           "school": "Istituto Comprensivo Carchidio",
-                           "serial number": "100"
                        },
-                       "features": {
-                           "measurements": {
-                               "properties": {
-                                   "temperature": {
-                                       "sensor": "Si7021",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": 0.0
-                                   },
-                                   "humidity": {
-                                       "sensor": "Si7021",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": 0.0
-                                   },
-                                   "pressure": {
-                                       "sensor": "BMP280",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": 0.0
-                                   },
-                                   "co2": {
-                                       "sensor": "SGP30",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": 0
-                                   },
-                                   "tvoc": {
-                                       "sensor": "SGP30",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": 0
-                                   },
-                                   "quality": {"sensor": "PMS5003",
-                                               "timestamp": "2018-12-10T13:49:51.141Z",
-                                               "data": {}
-                                               },
-                                   "rain": {
-                                       "sensor": "rain sensor",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": False
-                                   },
-                                   "uv": {
-                                       "sensor": "UV sensor",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": 0.0
-                                   },
-                                   "wind": {
-                                       "sensor": "anemometer",
-                                       "timestamp": "2018-12-10T13:49:51.141Z",
-                                       "data": 0.0
-                                   },
+                       "school": school,
+                       "serial number": serial_number
+                   },
+                   "features": {
+                       "measurements": {
+                           "properties": {
+                               "temperature": {
+                                   "sensor": "Si7021",
+                               },
+                               "humidity": {
+                                   "sensor": "Si7021",
+                               },
+                               "pressure": {
+                                   "sensor": "BMP280",
+                               },
+                               "co2": {
+                                   "sensor": "SGP30",
+                               },
+                               "tvoc": {
+                                   "sensor": "SGP30",
+                               },
+                               "quality": {
+                                   "sensor": "PMS5003",
+                               },
+                               "rain": {
+                                   "sensor": "rain sensor",
+                               },
+                               "uv": {
+                                   "sensor": "UV sensor",
+                               },
+                               "wind": {
+                                   "sensor": "anemometer",
+                               },
 
 
-                               }
                            }
                        }
-                       }
-        store.commit()
+                   }
+                   }
+    store.commit()
+
+# **************************************************************************************
+# *            Functions to update the digital twin and send it to the cloud           *
+# **************************************************************************************
 
 
 def update():
@@ -440,7 +454,7 @@ def update():
 
 def loop_forever():
     while True:
-        update()
+        update()  # separare se si vuole aggiornare e inviare al cloud con timing differente
         time.sleep(1)
 
 
@@ -456,7 +470,9 @@ app.add_routes([web.get('/api/temp', getTemp),
 
 # TODO: read from config.json gps and generate a thing uuid
 if __name__ == '__main__':
-    init()
+    with atomic_store.open('digital_twin.json', default=dict()) as store:
+        if store.value == dict():
+            init(store)
     loop = threading.Thread(target=loop_forever)
     loop.start()
     web.run_app(app)

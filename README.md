@@ -1,6 +1,7 @@
 # Edge System
-nel nostro sistema è rappresentato dalla casina e dal digital twin che lo rappresenta. Si tratta  di un livello obbligato poichè esso stesso racchiude i sensori che acquisiscono le informazioni ambientali.
-Siccome l'edge può avere poche risorse computazionali e di memoria a disposizione, tutto ciò che è sull'edge, digital twin compreso, è stato pensato per essere leggero e minimale. Qui il digital twin permette di avere un livello di astrazione della casina, catturandone gli aspetti importanti e rappresentandone, in ogni istante, un gemello digitale con le informazioni aggiornate.
+Livello necessario al funzionamento dell'intero sistema poichè racchiude i sensori che acquisiscono le informazioni ambientali.
+Siccome l'edge può avere poche risorse computazionali e di memoria a disposizione, tutto ciò che è sull'edge è stato pensato per essere leggero e minimale. 
+Qui il digital twin permette di avere un livello di astrazione della casina, catturandone gli aspetti importanti e rappresentandone, in ogni istante, un gemello digitale con le informazioni aggiornate.
 #### Software Info
 
 ![GitHub](https://img.shields.io/github/license/PC-ProgettoMIA/edge)

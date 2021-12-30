@@ -1,7 +1,3 @@
-# TODO change initialization as mqtt_mia.py
-# TODO change quality name (il nome delle pm dà errore il . con mongo)
-
-from aiohttp import web
 import atomic_store
 import time
 import board
@@ -12,12 +8,6 @@ import adafruit_sgp30
 import serial
 import RPi.GPIO as GPIO
 import smbus
-import random
-import json
-import threading
-import uuid
-
-namespace = "my.sensors:"
 
 # ***********************************************************
 # *                  isr routine anemometer                 *
@@ -270,146 +260,12 @@ sgp30.set_iaq_baseline(0x8973, 0x8aae)
 
 pm_sensor = pms5003("/dev/ttyS0")
 
-# **************************************************************************************
-# *                         GET functions for the clients                              *
-# **************************************************************************************
-
-
-async def getTemp(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"temp": props["temperature"]["data"]})
-
-
-async def getHum(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"hum": props["humidity"]["data"]})
-
-
-async def getPress(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"press": props["pressure"]["data"]})
-
-
-async def getCO2TVOCs(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"co2": props["co2"]["data"], "tvoc": props["tvoc"]["data"]})
-
-
-async def getQuality(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"qual": props["quality"]["data"]})
-
-
-async def getRain(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"rain": props["rain"]["data"]})
-
-
-async def getUV(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"uv": props["uv"]["data"]})
-
-
-async def getWind(request):
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        dt = store.value
-        props = dt["features"]["measurements"]["properties"]
-        return web.json_response({"wind": props["wind"]["data"]})
-
-# **************************************************************************************
-# *   Functions to read the initial config from file and initialize the digital twin   *
-# **************************************************************************************
-
-
-def read_config():
-    with open("config/config.json") as config_file:
-        config_json = json.load(config_file)
-        if "gps" not in config_json:
-            print("Error! GPS required!")
-        return config_json
-
-
-def init(store):
-    config_json = read_config()
-    gps = config_json["gps"]
-    serial_number = config_json["serial number"]
-    school = config_json["school"]
-
-    id = namespace + "sensor" + str(uuid.uuid4())
-    store.value = {"thingId": id,
-                   "policyId": "my.test:policy",
-                   "attributes": {
-                       "location": {
-                               "position": {
-                                   "latitude": gps["lat"],
-                                   "longitude": gps["lon"]
-                               }
-                       },
-                       "school": school,
-                       "serial number": serial_number
-                   },
-                   "features": {
-                       "measurements": {
-                           "properties": {
-                               "temperature": {
-                                   "sensor": "Si7021",
-                               },
-                               "humidity": {
-                                   "sensor": "Si7021",
-                               },
-                               "pressure": {
-                                   "sensor": "BMP280",
-                               },
-                               "co2": {
-                                   "sensor": "SGP30",
-                               },
-                               "tvoc": {
-                                   "sensor": "SGP30",
-                               },
-                               "quality": {
-                                   "sensor": "PMS5003",
-                               },
-                               "rain": {
-                                   "sensor": "rain sensor",
-                               },
-                               "uv": {
-                                   "sensor": "UV sensor",
-                               },
-                               "wind": {
-                                   "sensor": "anemometer",
-                               },
-
-
-                           }
-                       }
-                   }
-                   }
-    store.commit()
-
-# **************************************************************************************
-# *            Functions to update the digital twin and send it to the cloud           *
-# **************************************************************************************
-
 
 def update():
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
+    with atomic_store.open('src/resources/digital_twin.json', default=dict()) as store:
         dt = store.value
         props = dt["features"]["measurements"]["properties"]
-        timestamp = time.time()
+        timestamp = int(round(time.time() * 1000))
         temperature = Si7021.temperature
         humidity = Si7021.relative_humidity
         pressure = bmp280.pressure
@@ -434,7 +290,7 @@ def update():
         if tvoc != None:
             props["tvoc"]["timestamp"] = timestamp
             props["tvoc"]["data"] = tvoc
-        if quality != None and quality != {}:
+        if quality != None and quality != []:
             props["quality"]["timestamp"] = timestamp
             props["quality"]["data"] = quality
         if rain != None:
@@ -452,27 +308,7 @@ def update():
         store.commit()
 
 
-def loop_forever():
-    while True:
-        update()  # separare se si vuole aggiornare e inviare al cloud con timing differente
-        time.sleep(1)
-
-
-app = web.Application()
-app.add_routes([web.get('/api/temp', getTemp),
-                web.get('/api/hum', getHum),
-                web.get('/api/press', getPress),
-                web.get('/api/co2TVOC', getCO2TVOCs),
-                web.get('/api/qual', getQuality),
-                web.get('/api/rain', getRain),
-                web.get('/api/uv', getUV),
-                web.get('/api/wind', getWind)])
-
-# TODO: read from config.json gps and generate a thing uuid
 if __name__ == '__main__':
-    with atomic_store.open('digital_twin.json', default=dict()) as store:
-        if store.value == dict():
-            init(store)
-    loop = threading.Thread(target=loop_forever)
-    loop.start()
-    web.run_app(app)
+    while True:
+        update()
+        time.sleep(1)

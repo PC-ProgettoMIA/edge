@@ -1,6 +1,8 @@
 {
+    "serial number": "100",
     "gps": {
         "lat": 44.22996646689267,
         "lon": 12.023054639722368
-    }
+    },
+    "school": "Istituto Comprensivo Carchidio"
 }

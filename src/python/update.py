@@ -215,10 +215,10 @@ class pms5003:
 
                 # return self.pm_data
 
-                val_ret = {"pm1.0_std": self.pm_data[0], "pm2.5_std": self.pm_data[1], "pm10_std ": self.pm_data[2],
-                           "pm1.0_atm": self.pm_data[3], "pm2.5_atm": self.pm_data[4], "pm10_atm ": self.pm_data[5],
-                           "part_0.3 ": self.pm_data[6], "part_0.5 ": self.pm_data[7], "part_1.0 ": self.pm_data[8],
-                           "part_2.5 ": self.pm_data[9], "part_5.0 ": self.pm_data[10], "part_10  ": self.pm_data[11]}
+                val_ret = [{"pm1_0_std": self.pm_data[0]}, {"pm2_5_std": self.pm_data[1]}, {"pm10_std": self.pm_data[2]}]
+                           #"pm1_0_atm": self.pm_data[3], "pm2_5_atm": self.pm_data[4], "pm10_atm": self.pm_data[5],
+                           #"part_0_3": self.pm_data[6], "part_0_5": self.pm_data[7], "part_1_0": self.pm_data[8],
+                           #"part_2_5": self.pm_data[9], "part_5_0": self.pm_data[10], "part_10": self.pm_data[11]}
 
                 return val_ret
 

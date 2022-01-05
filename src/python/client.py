@@ -8,8 +8,7 @@ def send():
     with atomic_store.open("src/resources/digital_twin.json", default=dict()) as store:
         dt = store.value
         thindId = dt["thingId"]
-        id = thindId.split(":")[-1]
-        response = requests.put("http://137.204.107.148:3128/api/ditto/" + id,
+        response = requests.put("http://137.204.107.148:3128/api/ditto/" + thindId,
                                 data=dt,
                                 auth=HTTPBasicAuth("ditto", "ditto"))
         if response.status_code == 400:

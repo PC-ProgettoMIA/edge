@@ -22,13 +22,13 @@ Qui il digital twin permette di avere un livello di astrazione della casina, cat
 ![GitHub last commit](https://img.shields.io/github/last-commit/PC-ProgettoMIA/edge/develop)
 
 
-##Requirements
+## Requirements
 Il software dell'edge può essere messo in esecuzione solo sulle casette realizzate per il _progetto MIA_.
 
-##Deployment
+## Deployment
 Il deployment può essere effettuato in varie modalità in base ai comportamenti desiderati del sistema.
 
-###Caso edge 
+### Caso edge 
 In assenza del cloud e della messa in funzione di una o più casette e un singolo fog, seguire i seguenti passaggi:
 ```bash
 #Abilitare i permessi per l'esecuzione dello script.
@@ -37,7 +37,7 @@ chmod 755 only_fog.sh
 ./only_fog.sh
 ```
 
-###Caso edge e fog
+### Caso edge e fog
 In assenza del cloud e della messa in funzione di una o più casette e un singolo fog, seguire i seguenti passaggi:
 ```bash
 #Abilitare i permessi per l'esecuzione dello script.
@@ -46,7 +46,7 @@ chmod 755 only_fog.sh
 ./only_fog.sh
 ```
 
-###Caso edge e cloud
+### Caso edge e cloud
 In presenza del cloud, seguire i seguenti passaggi:
 ```bash
 #Abilitare i permessi per l'esecuzione dello script.
@@ -55,7 +55,7 @@ chmod 755 fog_for_cloud.sh
 ./fog_for_cloud.sh
 ```
 
-###Caso edge, fog e cloud
+### Caso edge, fog e cloud
 In presenza del cloud, seguire i seguenti passaggi:
 ```bash
 #Abilitare i permessi per l'esecuzione dello script.

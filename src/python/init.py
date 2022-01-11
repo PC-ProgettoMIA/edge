@@ -1,6 +1,5 @@
 import atomic_store
 import json
-import time
 
 namespace = "my.houses:"
 
@@ -18,7 +17,7 @@ def init(store):
     serial_number = config_json["serial number"]
     school = config_json["school"]
 
-    id = namespace + "house01"  # str(uuid.uuid4())
+    id = namespace + "house" + serial_number  # str(uuid.uuid4())
     store.value = {"thingId": id,
                    "policyId": "house.mia:policy",
                    "attributes": {

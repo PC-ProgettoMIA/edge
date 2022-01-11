@@ -15,15 +15,6 @@ def send():
             print("Error! Request malformed!")
         elif response.status_code == 404:
             print("Error! Thing not found!")
-    """
-    response = requests.put("http://137.204.107.148:3128/api/ditto/" + id,
-                                data=dt,
-                                auth=HTTPBasicAuth("ditto", "ditto"))
-    if response.status_code == 400:
-        print("Error! Request malformed!")
-    elif response.status_code == 404:
-        print("Error! Thing not found!")
-    """
     
 if __name__ == '__main__':
     while True:

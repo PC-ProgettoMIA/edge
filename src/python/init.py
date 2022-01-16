@@ -1,5 +1,6 @@
 import atomic_store
 import json
+import uuid
 
 namespace = "my.houses:"
 
@@ -16,8 +17,8 @@ def init(store):
     gps = config_json["gps"]
     serial_number = config_json["serial number"]
     school = config_json["school"]
-
-    id = namespace + "house" + serial_number  # str(uuid.uuid4())
+    random = str(uuid.uuid4())
+    id = namespace + "house" + random
     store.value = {"thingId": id,
                    "policyId": "house.mia:policy",
                    "attributes": {

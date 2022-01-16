@@ -56,7 +56,7 @@ chmod 755 edge-cloud.sh
 ```
 
 ### Caso edge, fog e cloud
-In presenza del cloud, seguire i seguenti passaggi:
+In presenza di tutte le componenti, seguire i seguenti passaggi:
 ```bash
 #Abilitare i permessi per l'esecuzione dello script.
 chmod 755 edge-fog.sh
